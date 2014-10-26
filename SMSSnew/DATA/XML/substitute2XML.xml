@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<scripts>
+
+	
+	
+<scripts absentTeachers="select * from(
+select d.teacher_id,d.class_id,d.slot_id,d.subject_code,d.subject_type_name,e.leave_category_id from(
+
+select  teacher_id,class_id,slot_id ,d.subject_type_name ,d.subject_code from
+(select a.teacher_id,a.class_id ,a.slot_id ,b.subject_type_id from teacher_assigned_to_slot as a,teacher_subject_type_allocation as b
+where a.teacher_id=b.teacher_id and a.class_id =b.class_id)as c,subject_type as d where c.subject_type_id=d.subject_type_id)as d,
+
+
+(select distinct leave_application_form.teacher_id,leave_application_form.leave_category_id from(
+select distinct b.teacher_id,b.leave_category_id from attendance as a,leave_application_form as b
+where a.date=date(now()) and a.status=0 and a.teacher_id=b.teacher_id and b.leave_category_id != 'SHORT'
+)
+as c
+left join
+leave_application_form on c.teacher_id=leave_application_form.teacher_id
+union
+select b.teacher_id ,b.leave_category_id from leave_application_form as b
+where leave_category_id='HALF_EVE' and date(now()) between start_date and end_date
+order by leave_category_id)as e
+where d.teacher_id=e.teacher_id)as f where leave_category_id='FULL' and slot_id between @from and @to or
+leave_category_id='HALF_EVE' and slot_id between @a and @b or
+leave_category_id='HALF_MOR' and slot_id between @c and @d order by teacher_id
+  "/>
+	
+	
+	<scripts presentTeachers="select distinct teacher_id from (select  * from(
+select d.teacher_id,d.class_id,d.slot_id,d.subject_code,d.subject_type_name,e.leave_category_id from
+(select  teacher_id,class_id,slot_id ,d.subject_type_name ,d.subject_code from
+(select a.teacher_id,a.class_id ,a.slot_id ,b.subject_type_id from teacher_assigned_to_slot as a,teacher_subject_type_allocation as b
+where a.teacher_id=b.teacher_id and a.class_id =b.class_id)as c,subject_type as d where c.subject_type_id=d.subject_type_id)as d,
+(select distinct a.teacher_id ,'FULL' as leave_category_id from attendance as a where a.teacher_id not in(select teacher_id from(
+select distinct leave_application_form.teacher_id,leave_application_form.leave_category_id from(
+select distinct b.teacher_id,b.leave_category_id from attendance as a,leave_application_form as b
+where a.date=date(now()) and a.status=0 and a.teacher_id=b.teacher_id
+)
+as c
+left join
+leave_application_form on c.teacher_id=leave_application_form.teacher_id
+union
+select b.teacher_id ,b.leave_category_id from leave_application_form as b
+where leave_category_id='HALF_EVE' or leave_category_id='SHORT' and date(now()) between start_date and end_date
+order by leave_category_id)as d)
+union
+select b.teacher_id ,b.leave_category_id from leave_application_form as b
+where b.leave_category_id='HALF_MOR' or b.leave_category_id='HALF_EVE' or b.leave_category_id='SHORT')as e
+where d.teacher_id=e.teacher_id)as f where leave_category_id='FULL' and slot_id between @from and @to or
+leave_category_id='HALF_EVE' and slot_id between @a and @b or
+leave_category_id='HALF_MOR' and slot_id between @c and @d order by teacher_id)as k
+"/>
+
+	<scripts presentTchsTT= "select  teacher_id,slot_id from (select  * from(
+select d.teacher_id,d.class_id,d.slot_id,d.subject_code,d.subject_type_name,e.leave_category_id from
+(select  teacher_id,class_id,slot_id ,d.subject_type_name ,d.subject_code from
+(select a.teacher_id,a.class_id ,a.slot_id ,b.subject_type_id from teacher_assigned_to_slot as a,teacher_subject_type_allocation as b
+where a.teacher_id=b.teacher_id and a.class_id =b.class_id)as c,subject_type as d where c.subject_type_id=d.subject_type_id)as d,
+(select distinct a.teacher_id ,'FULL' as leave_category_id from attendance as a where a.teacher_id not in(select teacher_id from(
+select distinct leave_application_form.teacher_id,leave_application_form.leave_category_id from(
+select distinct b.teacher_id,b.leave_category_id from attendance as a,leave_application_form as b
+where a.date=date(now()) and a.status=0 and a.teacher_id=b.teacher_id
+)
+as c
+left join
+leave_application_form on c.teacher_id=leave_application_form.teacher_id
+union
+select b.teacher_id ,b.leave_category_id from leave_application_form as b
+where leave_category_id='HALF_EVE' or leave_category_id='SHORT' and date(now()) between start_date and end_date
+order by leave_category_id)as d)
+union
+select b.teacher_id ,b.leave_category_id from leave_application_form as b
+where b.leave_category_id='HALF_MOR' or b.leave_category_id='HALF_EVE' or b.leave_category_id='SHORT')as e
+where d.teacher_id=e.teacher_id)as f where leave_category_id='FULL' and slot_id between @from and @to or
+leave_category_id='HALF_EVE' and slot_id between @a and @b or
+leave_category_id='HALF_MOR' and slot_id between @c and @d )as k where teacher_id='@e'"/>
+</scripts>

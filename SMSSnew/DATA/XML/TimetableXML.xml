@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<scripts>
+
+	<scripts InsertToSlotAllocation="INSERT INTO smss_new.slot_allocation ( grade_id,class_id,slot_id,subject_code) VALUES ('@gID','@cID',CAST('@sID' AS SIGNED INTEGER),'@sCode')"/>
+	/>
+
+	<scripts InsertToTeacherAssignedToSlot="INSERT INTO smss_new.teacher_assigned_to_slot( teacher_id,class_id,slot_id) VALUES ('@tID', '@cID',CAST('@sID' AS SIGNED INTEGER)) "/>
+
+	<scripts GetTeacherConflict="SELECT sa.class_id,sa.subject_code,sa.slot_id,tas.teacher_id FROM slot_allocation sa , teacher_assigned_to_slot tas WHERE sa.class_id =tas.class_id AND sa.slot_id = tas.slot_id AND tas.teacher_id= '@tID' AND sa.slot_id = @sID " />
+
+	<scripts GetClassConflict="SELECT * FROM slot_allocation  WHERE class_id ='@cID' AND slot_id = '@sID' "/>
+
+
+
+
+
+	<scripts GetSubjectType="SELECT subject_type_id from subject_type where subject_code='@subject'" />
+
+	<scripts GetAestheticTeachers="SELECT distinct teacher_id from teacher_subject_type_allocation where subject_type_id ='@sub1' and class_id='@class_id' "/>
+
+	<scripts GetAestheticTeachersClash="SELECT teacher_id from teacher_assigned_to_slot where teacher_id='@teacher'and slot_id='@slot'" />
+
+	<scripts GetSubjectGroups="select group_id from class_combination where class='@class_id' and subject_code='@subject_id' "/>
+
+	<scripts GetGradeID="select grade_id from class_combination where class='@class_id'"/>
+
+	<scripts GetSubjectGroupClasses="SELECT distinct class FROM class_combination where group_id='@group_id' and subject_code='@subject_id' and grade_id='@grade_id' "/>
+
+	<scripts   query6 = "SELECT distinct teacher_subject_type_allocation.teacher_id from teacher_subject_type_allocation inner join subject_type on (teacher_subject_type_allocation.subject_type_id=subject_type.subject_type_id) inner join class_combination on(subject_type.subject_code=class_combination.subject_code) where teacher_subject_type_allocation.class_id='@class_id' and subject_type.subject_code='@subject_id'"
+
+                            />
+	<scripts GetAlreadyAssignedAesthetic = "select * from slot_allocation where class_id='@class_id' and subject_code='@subject_id'" />
+
+
+
+
+
+
+	<scripts GetOrderedInputRecords = "  SELECT DISTINCT a.teacher_id,c.subject_name, c.subject_code, a.class_id, c.total_slots, c.subject_weight
+                        FROM teacher_subject_type_allocation AS a, subject_type AS b, subject AS c, class AS d
+                        WHERE d.class_id='@cID'
+                        AND d.class_teacher_id=a.teacher_id
+                        AND a.subject_type_id=b.subject_type_id
+                        AND b.subject_code=c.subject_code
+                        AND a.class_id=d.class_id
+
+                        UNION
+                        select * from(select * from(SELECT DISTINCT a.teacher_id,c.subject_name, c.subject_code, a.class_id, c.total_slots, c.subject_weight
+                        FROM teacher_subject_type_allocation AS a, subject_type AS b, subject AS c, class AS d
+                        WHERE d.class_id='@cID'
+                        AND NOT d.class_teacher_id=a.teacher_id
+                        AND a.subject_type_id=b.subject_type_id
+                        AND b.subject_code=c.subject_code
+                        AND a.class_id=d.class_id
+                        ANd NOT b.subject_code='S9'
+                        union
+                        select m.teacher_id,m.subject_name,m.subject_code, m.class_id, m.total_slots, m.subject_weight
+                        from(SELECT distinct b.class_id,c.total_slots, c.subject_weight,a.subject_code,
+                        case when a.subject_code='S9' then 'S91' end as subject_type_id ,
+                        case when a.subject_code='S9' then 'Aesthetic' end as subject_name,
+                        case when a.subject_code='S9'  then 'T_A' end as teacher_id
+                        FROM subject_type as a , teacher_subject_type_allocation as b, subject as c
+                        where a.subject_code='S9'  and a.subject_code=c.subject_code) as m where m.class_id='@cID')as l order by  subject_weight, teacher_id)as k"  />
+
+
+
+
+	<scripts loadGrade="select * from grade " />
+
+	<scripts loadClassID="SELECT class_id from class where grade_id='@gradeID'"/>
+
+
+
+	<!--deni-->
+	<scripts viewTeacherTimetable="SELECT class_id,slot_id from teacher_assigned_to_slot where teacher_id='@teacher_id' " />
+
+	<scripts insert_tempory="insert into tempory_time_table values(
+	(select t.class_id from teacher_assigned_to_slot t inner join slot_allocation s on t.slot_id=s.slot_id and t.class_id=s.class_id where t.teacher_id='@teacher_id' and t.slot_id=cast('@mon' as signed integer)),
+	(select t.class_id from teacher_assigned_to_slot t inner join slot_allocation s on t.slot_id=s.slot_id and t.class_id=s.class_id where t.teacher_id='@teacher_id' and t.slot_id=cast('@tue' as signed integer)),
+	(select t.class_id from teacher_assigned_to_slot t inner join slot_allocation s on t.slot_id=s.slot_id and t.class_id=s.class_id where t.teacher_id='@teacher_id' and t.slot_id=cast('@wed' as signed integer)),
+	(select t.class_id from teacher_assigned_to_slot t inner join slot_allocation s on t.slot_id=s.slot_id and t.class_id=s.class_id where t.teacher_id='@teacher_id' and t.slot_id=cast('@thu' as signed integer)),
+	(select t.class_id from teacher_assigned_to_slot t inner join slot_allocation s on t.slot_id=s.slot_id and t.class_id=s.class_id where t.teacher_id='@teacher_id' and t.slot_id=cast('@fri' as signed integer)))  " />
+
+	<scripts loadTeacherTimetable="select * from tempory_time_table " />
+
+	<scripts createTemporyTable="create table tempory_time_table (Monday varchar(45),Tuesday varchar(45),Wednesday varchar(45),Thursday varchar(45),Friday varchar(45)) " />
+
+	<scripts deleteTemporyTable="drop table tempory_time_table " />
+
+	<scripts loadTeacherIds="select user_name from user where user_type='TCH' " />
+
+
+
+	<scripts create_temporary="CREATE TABLE temporary_time_table
+								(
+								MonDay varchar(20),
+								TuesDay varchar(20),
+								WednsDay varchar(20),
+								ThursDay varchar(20),
+								FriDay varchar(20)
+								)"/>
+
+	<scripts insert_temporary=" insert into temporary_time_table values(
+  (select b.subject_name from slot_allocation as a, subject as b where class_id='@class_id' and a.subject_code=b.subject_code and a.slot_id=cast('@mon' as signed integer)),
+  (select b.subject_name from slot_allocation as a, subject as b where class_id='@class_id' and a.subject_code=b.subject_code and a.slot_id=cast('@tue' as signed integer)),
+  (select b.subject_name from slot_allocation as a, subject as b where class_id='@class_id' and a.subject_code=b.subject_code and a.slot_id=cast('@wed' as signed integer)),
+  (select b.subject_name from slot_allocation as a, subject as b where class_id='@class_id' and a.subject_code=b.subject_code and a.slot_id=cast('@thu' as signed integer)),
+  (select b.subject_name from slot_allocation as a, subject as b where class_id='@class_id' and a.subject_code=b.subject_code and a.slot_id=cast('@fri' as signed integer)))" />
+
+	<scripts loadClassTimetable="select * from temporary_time_table " />
+
+	<scripts drop_temporary="drop table temporary_time_table" />
+
+
+
+</scripts>

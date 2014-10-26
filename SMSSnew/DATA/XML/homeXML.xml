@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<scripts>
+	
+	<scripts login="select * from user where user_name = '@username' and pword = '@password' " />
+
+	<scripts getUserType=" SELECT user_type FROM user where user_name='@username' " />
+
+	<scripts getSecData=" SELECT sec_question, sec_answer FROM user where user_name = '@username' " />
+
+	<scripts getReceiverMailAndPassword=" SELECT email,pword FROM user where user_name = '@username' " />
+
+
+</scripts>
